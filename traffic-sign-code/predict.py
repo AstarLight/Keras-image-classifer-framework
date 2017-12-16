@@ -6,7 +6,7 @@ import argparse
 import imutils
 import cv2
 
-norm_size = 64
+norm_size = 32
 
 def args_parse():
 # construct the argument parse and parse the arguments
@@ -15,14 +15,18 @@ def args_parse():
         help="path to trained model model")
     ap.add_argument("-i", "--image", required=True,
         help="path to input image")
-    ap.add_argument("-s", "--show", 
+    ap.add_argument("-s", "--show", action="store_true",
         help="show predict image",default=False)
     args = vars(ap.parse_args())    
     return args
 
     
 def predict(args):
-# load the image
+    # load the trained convolutional neural network
+    print("[INFO] loading network...")
+    model = load_model(args["model"])
+    
+    #load the image
     image = cv2.imread(args["image"])
     orig = image.copy()
      
@@ -31,14 +35,10 @@ def predict(args):
     image = image.astype("float") / 255.0
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
-    
-    # load the trained convolutional neural network
-    print("[INFO] loading network...")
-    model = load_model(args["model"])
      
     # classify the input image
     result = model.predict(image)[0]
-    print (result.shape)
+    #print (result.shape)
     proba = np.max(result)
     label = str(np.where(result==proba)[0])
     label = "{}: {:.2f}%".format(label, proba * 100)
@@ -54,7 +54,7 @@ def predict(args):
         cv2.waitKey(0)
 
 
-
+#python predict.py --model traffic_sign.model -i ../2.png -s
 if __name__ == '__main__':
     args = args_parse()
     predict(args)
